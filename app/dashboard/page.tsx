@@ -119,9 +119,9 @@ const calculateDailyStats = (activities: Activity[]): DailyStats => {
     })
   )
 
-  // Calculate mood score (average of today's mood entries)
+  // Calculate mood score (average of today's mood entries) 
   const moodEntries = todaysActivities.filter(
-    (a) => a.type === "mood" && a.moodScore !== null && a.moodScore !== undefined
+    (a) => a.type === "mood" && a.moodScore !== null && a.moodScore !== undefined // check if mood score is very low
   )
   const latestMood =
     moodEntries.length > 0
