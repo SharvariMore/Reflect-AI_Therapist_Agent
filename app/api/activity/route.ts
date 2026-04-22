@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const response = await fetch(`${API_URL}/api/activity`, {
+    const response = await fetch(`${API_URL}/api/activity/log`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     if (!response.ok) {
       const error = await response.json()
       return NextResponse.json(
-        { error: error.message || "Failed to Log Activity!" },
+        { error: error.message || error.error || "Failed to Log Activity!" },
         { status: response.status }
       )
     }

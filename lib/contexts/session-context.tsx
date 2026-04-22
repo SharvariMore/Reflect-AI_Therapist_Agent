@@ -3,6 +3,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface User {
   _id: string;
@@ -41,29 +42,33 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      console.log("SessionContext: Fetching user data...");
       const response = await fetch(`${BACKEND_API_URL}/api/auth/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      console.log("SessionContext: Response status:", response.status);
 
       if (response.ok) {
         const data = await response.json();
-        console.log("SessionContext: User data received:", data);
         const userData = data.user;
         const { password, ...safeUserData } = userData;
         setUser(safeUserData);
-        console.log("SessionContext: User state updated:", safeUserData);
+        toast.success("Session Checked Successfully!", {
+          description: "Your session has been checked successfully.",
+        })
       } else {
-        console.log("SessionContext: Failed to Get User Data!");
+        toast.error("Failed to Get User Data!", {
+          description: "Failed to get user data!",
+        })
         setUser(null);
         localStorage.removeItem("token");
       }
     } catch (error) {
       console.error("SessionContext: Error checking session:", error);
+      toast.error("Error Checking Session!", {
+        description: "Error checking session!",
+      })
       setUser(null);
       localStorage.removeItem("token");
     } finally {
@@ -92,7 +97,6 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    console.log("SessionContext: Initial check");
     checkSession();
   }, []);
 

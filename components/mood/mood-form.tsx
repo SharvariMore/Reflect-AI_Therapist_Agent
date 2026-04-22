@@ -10,11 +10,13 @@ import { Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 interface MoodFormProps {
-  onSuccess?: () => void /* Callback function to be called when mood is successfully submitted */
+  onSuccess?: (
+    moodScore: number
+  ) => void /* Callback function to be called when mood is successfully submitted */
 }
 
 export default function MoodForm({ onSuccess }: MoodFormProps) {
-  const [moodScore, setMoodScore] = useState(50) /* Hold user's selected mood */
+  const [moodScore, setMoodScore] = useState(0) /* Hold user's selected mood */
   const [isLoading, setIsLoading] = useState(false)
   const { user, isAuthenticated, loading } = useSession()
   const router = useRouter()
@@ -32,11 +34,7 @@ export default function MoodForm({ onSuccess }: MoodFormProps) {
     emotions.find((em) => Math.abs(moodScore - em.value) < 15) || emotions[2]
 
   const handleSubmit = async () => {
-    console.log("MoodForm: Starting submission")
-    console.log("MoodForm: Auth state:", { isAuthenticated, loading, user })
-
     if (!isAuthenticated) {
-      console.log("MoodForm: User not authenticated")
       toast.warning("Authentication Required!", {
         description: "Please Login to Track Your Mood.",
         duration: 5000,
@@ -62,16 +60,17 @@ export default function MoodForm({ onSuccess }: MoodFormProps) {
         body: JSON.stringify({ score: moodScore }),
       })
 
-      console.log("MoodForm: Response status:", response.status)
-
       if (!response.ok) {
         const error = await response.json()
         console.error("MoodForm: Error response:", error)
+        toast.error("Failed to Track Your Mood!", {
+          description: error.error || "Failed to Track Your Mood!",
+          duration: 5000,
+        })
         throw new Error(error.error || "Failed to Track Your Mood!")
       }
 
       const data = await response.json()
-      console.log("MoodForm: Success response:", data)
 
       toast.success("Mood Tracked Successfully!", {
         // description: "Your Mood has Been Recorded!",
@@ -79,7 +78,7 @@ export default function MoodForm({ onSuccess }: MoodFormProps) {
       })
 
       // Call onSuccess to close the modal
-      onSuccess?.()
+      onSuccess?.(moodScore)
     } catch (error) {
       console.error("MoodForm: Error:", error)
       toast.error("Error", {
@@ -90,6 +89,14 @@ export default function MoodForm({ onSuccess }: MoodFormProps) {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const allowedMoodValues = [0, 25, 50, 75, 100]
+
+  const getClosestMoodValue = (value: number) => {
+    return allowedMoodValues.reduce((prev, curr) =>
+      Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev
+    )
   }
 
   return (
@@ -122,10 +129,10 @@ export default function MoodForm({ onSuccess }: MoodFormProps) {
 
         <Slider
           value={[moodScore]}
-          onValueChange={(value) => setMoodScore(value[0])}
+          onValueChange={(value) => setMoodScore(getClosestMoodValue(value[0]))}
           min={0}
           max={100}
-          step={1}
+          step={25}
           className="py-4"
         />
       </div>

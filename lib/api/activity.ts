@@ -22,7 +22,7 @@ export async function logActivity(
 
   if (!response.ok) {
     const error = await response.json()
-    throw new Error(error.message || "Failed to Log Activity!")
+    throw new Error(error.message || error.error || "Failed to Log Activity!")
   }
 
   return response.json()

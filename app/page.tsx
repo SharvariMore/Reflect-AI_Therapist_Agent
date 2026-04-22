@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/dialog"
 import Link from "next/link"
 import React from "react"
+import { useRouter } from "next/navigation"
 
 export default function Page() {
   /* value represents the intensity of the emotion */
@@ -105,7 +106,7 @@ export default function Page() {
   const [mounted, setMounted] = useState(false) // trigger animation only after the component is loaded
   const [showDialog, setShowDialog] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
-
+  const router = useRouter()
   useEffect(() => {
     setMounted(true) // control animations
   }, [])
@@ -117,7 +118,7 @@ export default function Page() {
   return (
     <div className="flex min-h-screen flex-col overflow-hidden">
       {/* Hero content section */}
-      <section className="relative mt-20 flex min-h-[90vh] flex-col items-center justify-center px-4 py-12">
+      <section className="relative mt-5 flex min-h-[90vh] flex-col items-center justify-center px-4 py-5">
         {/* Glowing background effect */}
         <div className="absolute inset-0 -z-10 overflow-hidden">
           {/* Blurred circular gradient at top-left which changes color based on selected emotion */}
@@ -340,6 +341,7 @@ export default function Page() {
                 } else {
                   setShowDialog(false)
                   setCurrentStep(0)
+                  router.push("/dashboard")
                   // Here you would navigate to the chat interface
                 }
               }}

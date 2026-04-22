@@ -20,6 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useSession } from "@/lib/contexts/session-context"
+import { toast } from "sonner"
+import { logActivity } from "@/lib/api/activity"
 
 const activityTypes = [
   { id: "meditation", name: "Meditation" },
@@ -46,17 +49,31 @@ export default function ActivityLogger({
   const [duration, setDuration] = useState("")
   const [description, setDescription] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const { user, isAuthenticated, loading } = useSession()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!isAuthenticated) {
+      toast.warning("Authentication Required", {
+        description: "Please log in to log activities",
+      })
+      return
+    }
 
-    /* Basic validation for missing fields */
-    setTimeout(() => {
-      console.log({
+    if (!type || !name) {
+      toast.warning("Missing Information", {
+        description: "Please fill in all required fields",
+      })
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      await logActivity({
         type,
         name,
-        duration,
         description,
+        duration: duration ? parseInt(duration) : undefined,
       })
 
       // Reset form
@@ -64,11 +81,22 @@ export default function ActivityLogger({
       setName("")
       setDuration("")
       setDescription("")
-      setIsLoading(false)
 
-      alert("Activity logged successfully!")
-      onOpenChange(false) //close modal
-    }, 1000)
+      toast.success("Activity Logged Successfully!", {
+        description: "Your Activity Has Been Recorded.",
+      })
+
+      onActivityLogged()
+      onOpenChange(false)
+    } catch (error) {
+      console.error("Error logging activity:", error)
+      toast.error("Failed to log activity", {
+        description:
+          error instanceof Error ? error.message : "Failed to Log Activity!",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -76,9 +104,9 @@ export default function ActivityLogger({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Log Activity</DialogTitle>
-          <DialogDescription>Record Your Wellness Activities</DialogDescription>
+          <DialogDescription>Record Your Wellness Activity</DialogDescription>
         </DialogHeader>
-        <form action="" onSubmit={handleSubmit}>
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <Label>Activity Type</Label>
             <Select value={type} onValueChange={setType}>
@@ -127,12 +155,26 @@ export default function ActivityLogger({
             <Button
               type="button"
               variant="ghost"
-            //   onClick={() => onOpenChange(false)}
+              onClick={() => onOpenChange(false)}
+              className="cursor-pointer"
             >
               Cancel
             </Button>
-            <Button type="submit" disabled>
-              Save Activity
+            <Button
+              type="submit"
+              disabled={isLoading || loading}
+              className="cursor-pointer"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : loading ? (
+                "Loading..."
+              ) : (
+                "Save Activity"
+              )}
             </Button>
           </div>
         </form>

@@ -1,3 +1,5 @@
+import { toast } from "sonner"
+
 export interface ChatMessage {
   role: "user" | "assistant"
   content: string
@@ -64,7 +66,6 @@ const getAuthHeaders = () => {
 
 export const createChatSession = async (): Promise<string> => {
   try {
-    console.log("Creating New Chat Session...")
     const response = await fetch(`${API_BASE}/chat/sessions`, {
       method: "POST",
       headers: getAuthHeaders(),
@@ -73,14 +74,19 @@ export const createChatSession = async (): Promise<string> => {
     if (!response.ok) {
       const error = await parseErrorResponse(response)
       console.error("Failed to Create Chat Session:", error)
+      toast.error("Failed to Create Chat Session!", {
+        description: error instanceof Error ? error.message : "Failed to Create Chat Session!",
+      })
       throw new Error(error.error || "Failed to Create Chat Session!")
     }
 
     const data = await response.json()
-    console.log("Chat Session Created:", data)
     return data.sessionId
   } catch (error) {
     console.error("Error Creating Chat Session:", error)
+    toast.error("Failed to Create Chat Session!", {
+      description: error instanceof Error ? error.message : "Failed to Create Chat Session!",
+    })
     throw error
   }
 }
@@ -90,7 +96,6 @@ export const sendChatMessage = async (
   message: string
 ): Promise<ApiResponse> => {
   try {
-    console.log(`Sending message to session ${sessionId}:`, message)
     const response = await fetch(
       `${API_BASE}/chat/sessions/${sessionId}/messages`,
       {
@@ -103,14 +108,22 @@ export const sendChatMessage = async (
     if (!response.ok) {
       const error = await parseErrorResponse(response)
       console.error("Failed to Send Message:", error)
+      toast.error("Failed to Send Message!", {
+        description: error instanceof Error ? error.message : "Failed to Send Message!",
+      })
       throw new Error(error.error || "Failed to Send Message!")
     }
 
     const data = await response.json()
-    console.log("Message Sent Successfully:", data)
+    toast.success("Message Sent Successfully!", {
+      description: "Your message has been sent to the therapist.",
+    })
     return data
   } catch (error) {
     console.error("Error Sending Chat Message:", error)
+    toast.error("Error Sending Chat Message!", {
+      description: error instanceof Error ? error.message : "Error Sending Chat Message!",
+    })
     throw error
   }
 }
@@ -119,7 +132,6 @@ export const getChatHistory = async (
   sessionId: string
 ): Promise<ChatMessage[]> => {
   try {
-    console.log(`Fetching chat history for session ${sessionId}`)
     const response = await fetch(
       `${API_BASE}/chat/sessions/${sessionId}/history`,
       {
@@ -130,14 +142,19 @@ export const getChatHistory = async (
     if (!response.ok) {
       const error = await parseErrorResponse(response)
       console.error("Failed to Fetch Chat History:", error)
+      toast.error("Failed to Fetch Chat History!", {
+        description: error instanceof Error ? error.message : "Failed to Fetch Chat History!",
+      })
       throw new Error(error.error || "Failed to Fetch Chat History!")
     }
 
     const data = await response.json()
-    console.log("Received Chat History:", data)
 
     if (!Array.isArray(data)) {
       console.error("Invalid Chat History Format:", data)
+      toast.error("Invalid Chat History Format!", {
+        description: "Invalid Chat History Format!",
+      })
       throw new Error("Invalid Chat History Format!")
     }
 
@@ -150,13 +167,15 @@ export const getChatHistory = async (
     }))
   } catch (error) {
     console.error("Error Fetching Chat History:", error)
+    toast.error("Error Fetching Chat History!", {
+      description: error instanceof Error ? error.message : "Error Fetching Chat History!",
+    })
     throw error
   }
 }
 
 export const getAllChatSessions = async (): Promise<ChatSession[]> => {
   try {
-    console.log("Fetching All Chat Sessions...")
     const response = await fetch(`${API_BASE}/chat/sessions`, {
       headers: getAuthHeaders(),
     })
@@ -164,11 +183,13 @@ export const getAllChatSessions = async (): Promise<ChatSession[]> => {
     if (!response.ok) {
       const error = await parseErrorResponse(response)
       console.error("Failed to Fetch Chat Sessions:", error)
+      toast.error("Failed to Fetch Chat Sessions!", {
+        description: error instanceof Error ? error.message : "Failed to Fetch Chat Sessions!",
+      })
       throw new Error(error.error || "Failed to Fetch Chat Sessions!")
     }
 
     const data = await response.json()
-    console.log("Received Chat Sessions:", data)
 
     return data.map((session: any) => {
       // Ensure dates are valid
@@ -187,6 +208,9 @@ export const getAllChatSessions = async (): Promise<ChatSession[]> => {
     })
   } catch (error) {
     console.error("Error Fetching Chat Sessions:", error)
+    toast.error("Error Fetching Chat Sessions!", {
+      description: error instanceof Error ? error.message : "Error Fetching Chat Sessions!",
+    })
     throw error
   }
 }

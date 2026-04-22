@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Lock, Mail } from "lucide-react"
 import { loginUser } from "@/lib/api/auth"
 import { useSession } from "@/lib/contexts/session-context"
-
+import { toast } from "sonner"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -28,7 +28,7 @@ export default function LoginPage() {
       const response = await loginUser(email, password)
 
       // Store the token in localStorage
-      localStorage.setItem("token", response.token);
+      localStorage.setItem("token", response.token)
 
       // Update session state
       await checkSession()
@@ -42,11 +42,15 @@ export default function LoginPage() {
           ? err.message
           : "Invalid Email or Password! Please try again."
       )
+      toast.error("Login Failed!", {
+        description: err instanceof Error ? err.message : "Invalid Email or Password! Please try again.",
+      })
     } finally {
       setLoading(false)
     }
-    console.log("Submitting login form...");
-    
+    toast.success("Login Successful!", {
+      description: "You are now logged in.",
+    })
   }
 
   return (
@@ -112,7 +116,7 @@ export default function LoginPage() {
               </p>
             )}
             <Button
-              className="w-full rounded-xl bg-gradient-to-r from-primary to-primary/80 py-2 text-base font-bold shadow-md hover:from-primary/80 hover:to-primary cursor-pointer"
+              className="w-full cursor-pointer rounded-xl bg-gradient-to-r from-primary to-primary/80 py-2 text-base font-bold shadow-md hover:from-primary/80 hover:to-primary"
               size="lg"
               type="submit"
               disabled={loading}

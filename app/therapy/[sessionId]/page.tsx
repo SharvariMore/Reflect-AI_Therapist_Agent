@@ -46,6 +46,7 @@ import {
   getAllChatSessions,
   ChatSession,
 } from "@/lib/api/chat"
+import { toast } from "sonner"
 
 interface SuggestedQuestion {
   id: string
@@ -223,12 +224,7 @@ export default function TherapyPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Form submitted")
     const currentMessage = message.trim()
-    console.log("Current message:", currentMessage)
-    console.log("Session ID:", sessionId)
-    console.log("Is typing:", isTyping)
-    console.log("Is chat paused:", isChatPaused)
 
     if (!currentMessage || isTyping || isChatPaused || !sessionId) {
       console.log("Submission blocked:", {
@@ -260,15 +256,12 @@ export default function TherapyPage() {
         return
       }
 
-      console.log("Sending message to API...")
       // Send message to API
       const response = await sendChatMessage(sessionId, currentMessage)
-      console.log("Raw API response:", response)
 
       // Parse the response if it's a string
       const aiResponse =
         typeof response === "string" ? JSON.parse(response) : response
-      console.log("Parsed AI response:", aiResponse)
 
       // Add AI response with metadata
       const assistantMessage: ChatMessage = {
@@ -295,14 +288,15 @@ export default function TherapyPage() {
         },
       }
 
-      console.log("Created assistant message:", assistantMessage)
-
       // Add the message immediately
       setMessages((prev) => [...prev, assistantMessage])
       setIsTyping(false)
       scrollToBottom()
     } catch (error) {
       console.error("Error in chat:", error)
+      toast.error("Error in chat!", {
+        description: error instanceof Error ? error.message : "Error in chat!",
+      })
       setMessages((prev) => [
         ...prev,
         {

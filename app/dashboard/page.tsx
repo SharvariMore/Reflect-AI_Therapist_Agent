@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
-import { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useCallback } from "react"
+import { motion } from "framer-motion"
 import {
   Brain,
   Calendar,
@@ -23,27 +23,31 @@ import {
   ClipboardClock,
   Zap,
   Logs,
-} from "lucide-react";
+  RotateCw,
+  RefreshCcw,
+  CircleArrowRight,
+  MessageSquareMore,
+} from "lucide-react"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Container } from "@/components/ui/container";
-import { cn } from "@/lib/utils";
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Container } from "@/components/ui/container"
+import { cn } from "@/lib/utils"
 
-import  MoodForm  from "@/components/mood/mood-form";
-import { AnxietyGames } from "@/components/games/anxiety-games";
+import MoodForm from "@/components/mood/mood-form"
+import { AnxietyGames } from "@/components/games/anxiety-games"
 
 import {
   getUserActivities,
   saveMoodData,
   logActivity,
-} from "@/lib/static-dashboard-data";
+} from "@/lib/static-dashboard-data"
 
 import {
   Dialog,
@@ -51,117 +55,118 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog";
-import { useRouter, useSearchParams } from "next/navigation";
+} from "@/components/ui/dialog"
+import { useRouter, useSearchParams } from "next/navigation"
 import {
   addDays,
   format,
   subDays,
   startOfDay,
   isWithinInterval,
-} from "date-fns";
+} from "date-fns"
 
-import  ActivityLogger  from "@/components/activities/activity-logger";
-import { useSession } from "@/lib/contexts/session-context";
-import { getAllChatSessions } from "@/lib/api/chat";
+import ActivityLogger from "@/components/activities/activity-logger"
+import { useSession } from "@/lib/contexts/session-context"
+import { getAllChatSessions } from "@/lib/api/chat"
+import { toast } from "sonner"
 
 // Add this type definition
-type ActivityLevel = "none" | "low" | "medium" | "high";
+type ActivityLevel = "none" | "low" | "medium" | "high"
 
 interface DayActivity {
-  date: Date;
-  level: ActivityLevel;
+  date: Date
+  level: ActivityLevel
   activities: {
-    type: string;
-    name: string;
-    completed: boolean;
-    time?: string;
-  }[];
+    type: string
+    name: string
+    completed: boolean
+    time?: string
+  }[]
 }
 
 // Add this interface near the top with other interfaces
 interface Activity {
-  id: string;
-  userId: string | null;
-  type: string;
-  name: string;
-  description: string | null;
-  timestamp: Date;
-  duration: number | null;
-  completed: boolean;
-  moodScore: number | null;
-  moodNote: string | null;
-  createdAt: Date;
-  updatedAt: Date;
+  id: string
+  userId: string | null
+  type: string
+  name: string
+  description: string | null
+  timestamp: Date
+  duration: number | null
+  completed: boolean
+  moodScore: number | null
+  moodNote: string | null
+  createdAt: Date
+  updatedAt: Date
 }
 
 // Add this interface for stats
 interface DailyStats {
-  moodScore: number | null;
-  completionRate: number;
-  mindfulnessCount: number;
-  totalActivities: number;
-  lastUpdated: Date;
+  moodScore: number | null
+  completionRate: number
+  mindfulnessCount: number
+  totalActivities: number
+  lastUpdated: Date
 }
 
 // Update the calculateDailyStats function to show correct stats
 const calculateDailyStats = (activities: Activity[]): DailyStats => {
-  const today = startOfDay(new Date());
+  const today = startOfDay(new Date())
   const todaysActivities = activities.filter((activity) =>
     isWithinInterval(new Date(activity.timestamp), {
       start: today,
       end: addDays(today, 1),
     })
-  );
+  )
 
   // Calculate mood score (average of today's mood entries)
   const moodEntries = todaysActivities.filter(
     (a) => a.type === "mood" && a.moodScore !== null
-  );
-  const averageMood =
+  )
+  const latestMood =
     moodEntries.length > 0
-      ? Math.round(
-          moodEntries.reduce((acc, curr) => acc + (curr.moodScore || 0), 0) /
-            moodEntries.length
-        )
-      : null;
+      ? moodEntries.sort(
+          (a, b) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        )[0].moodScore
+      : null
 
   // Count therapy sessions (all sessions ever)
-  const therapySessions = activities.filter((a) => a.type === "therapy").length;
+  const therapySessions = activities.filter((a) => a.type === "therapy").length
 
   return {
-    moodScore: averageMood,
+    moodScore: latestMood ?? null,
     completionRate: 100, // Always 100% as requested
     mindfulnessCount: therapySessions, // Total number of therapy sessions
     totalActivities: todaysActivities.length,
     lastUpdated: new Date(),
-  };
-};
+  }
+}
 
 // Rename the function
 const generateInsights = (activities: Activity[]) => {
   const insights: {
-    title: string;
-    description: string;
-    icon: any;
-    priority: "low" | "medium" | "high";
-  }[] = [];
+    title: string
+    description: string
+    icon: any
+    priority: "low" | "medium" | "high"
+  }[] = []
 
   // Get activities from last 7 days
-  const lastWeek = subDays(new Date(), 7);
+  const lastWeek = subDays(new Date(), 7)
   const recentActivities = activities.filter(
     (a) => new Date(a.timestamp) >= lastWeek
-  );
+  )
 
   // Analyze mood patterns
   const moodEntries = recentActivities.filter(
     (a) => a.type === "mood" && a.moodScore !== null
-  );
+  )
   if (moodEntries.length >= 2) {
     const averageMood =
       moodEntries.reduce((acc, curr) => acc + (curr.moodScore || 0), 0) /
-      moodEntries.length;
-    const latestMood = moodEntries[moodEntries.length - 1].moodScore || 0;
+      moodEntries.length
+    const latestMood = moodEntries[moodEntries.length - 1].moodScore || 0
 
     if (latestMood > averageMood) {
       insights.push({
@@ -170,7 +175,7 @@ const generateInsights = (activities: Activity[]) => {
           "Your recent mood scores are above your weekly average. Keep up the good work!",
         icon: Brain,
         priority: "high",
-      });
+      })
     } else if (latestMood < averageMood - 20) {
       insights.push({
         title: "Mood Change Detected",
@@ -178,23 +183,23 @@ const generateInsights = (activities: Activity[]) => {
           "I've noticed a dip in your mood. Would you like to try some mood-lifting activities?",
         icon: Heart,
         priority: "high",
-      });
+      })
     }
   }
 
   // Analyze activity patterns
   const mindfulnessActivities = recentActivities.filter((a) =>
     ["game", "meditation", "breathing"].includes(a.type)
-  );
+  )
   if (mindfulnessActivities.length > 0) {
-    const dailyAverage = mindfulnessActivities.length / 7;
+    const dailyAverage = mindfulnessActivities.length / 7
     if (dailyAverage >= 1) {
       insights.push({
         title: "Consistent Practice",
         description: `You've been regularly engaging in mindfulness activities. This can help reduce stress and improve focus.`,
         icon: Trophy,
         priority: "medium",
-      });
+      })
     } else {
       insights.push({
         title: "Mindfulness Opportunity",
@@ -202,16 +207,16 @@ const generateInsights = (activities: Activity[]) => {
           "Try incorporating more mindfulness activities into your daily routine.",
         icon: Sparkles,
         priority: "low",
-      });
+      })
     }
   }
 
   // Check activity completion rate
-  const completedActivities = recentActivities.filter((a) => a.completed);
+  const completedActivities = recentActivities.filter((a) => a.completed)
   const completionRate =
     recentActivities.length > 0
       ? (completedActivities.length / recentActivities.length) * 100
-      : 0;
+      : 0
 
   if (completionRate >= 80) {
     insights.push({
@@ -221,7 +226,7 @@ const generateInsights = (activities: Activity[]) => {
       )}% of your activities this week. Excellent commitment!`,
       icon: Trophy,
       priority: "high",
-    });
+    })
   } else if (completionRate < 50) {
     insights.push({
       title: "Activity Reminder",
@@ -229,16 +234,16 @@ const generateInsights = (activities: Activity[]) => {
         "You might benefit from setting smaller, more achievable daily goals.",
       icon: Calendar,
       priority: "medium",
-    });
+    })
   }
 
   // Time pattern analysis
   const morningActivities = recentActivities.filter(
     (a) => new Date(a.timestamp).getHours() < 12
-  );
+  )
   const eveningActivities = recentActivities.filter(
     (a) => new Date(a.timestamp).getHours() >= 18
-  );
+  )
 
   if (morningActivities.length > eveningActivities.length) {
     insights.push({
@@ -247,7 +252,7 @@ const generateInsights = (activities: Activity[]) => {
         "You're most active in the mornings. Consider scheduling important tasks during your peak hours.",
       icon: Sun,
       priority: "medium",
-    });
+    })
   } else if (eveningActivities.length > morningActivities.length) {
     insights.push({
       title: "Evening Routine",
@@ -255,73 +260,73 @@ const generateInsights = (activities: Activity[]) => {
         "You tend to be more active in the evenings. Make sure to wind down before bedtime.",
       icon: Moon,
       priority: "medium",
-    });
+    })
   }
 
   // Sort insights by priority and return top 3
   return insights
     .sort((a, b) => {
-      const priorityOrder = { high: 0, medium: 1, low: 2 };
-      return priorityOrder[a.priority] - priorityOrder[b.priority];
+      const priorityOrder = { high: 0, medium: 1, low: 2 }
+      return priorityOrder[a.priority] - priorityOrder[b.priority]
     })
-    .slice(0, 3);
-};
+    .slice(0, 3)
+}
 
 export default function Dashboard() {
-  const [mounted, setMounted] = useState(false);
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const router = useRouter();
-  const { user } = useSession();
+  const [mounted, setMounted] = useState(false)
+  const [currentTime, setCurrentTime] = useState(new Date())
+  const router = useRouter()
+  const { user } = useSession()
 
   // Rename the state variable
   const [insights, setInsights] = useState<
     {
-      title: string;
-      description: string;
-      icon: any;
-      priority: "low" | "medium" | "high";
+      title: string
+      description: string
+      icon: any
+      priority: "low" | "medium" | "high"
     }[]
-  >([]);
+  >([])
 
   // New states for activities and wearables
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [showMoodModal, setShowMoodModal] = useState(false);
-  const [showCheckInChat, setShowCheckInChat] = useState(false);
-  const [activityHistory, setActivityHistory] = useState<DayActivity[]>([]);
-  const [showActivityLogger, setShowActivityLogger] = useState(false);
-  const [isSavingActivity, setIsSavingActivity] = useState(false);
-  const [isSavingMood, setIsSavingMood] = useState(false);
+  const [activities, setActivities] = useState<Activity[]>([])
+  const [showMoodModal, setShowMoodModal] = useState(false)
+  const [showCheckInChat, setShowCheckInChat] = useState(false)
+  const [activityHistory, setActivityHistory] = useState<DayActivity[]>([])
+  const [showActivityLogger, setShowActivityLogger] = useState(false)
+  const [isSavingActivity, setIsSavingActivity] = useState(false)
+  const [isSavingMood, setIsSavingMood] = useState(false)
   const [dailyStats, setDailyStats] = useState<DailyStats>({
     moodScore: null,
     completionRate: 100,
     mindfulnessCount: 0,
     totalActivities: 0,
     lastUpdated: new Date(),
-  });
+  })
 
   // Add this function to transform activities into day activity format
   const transformActivitiesToDayActivity = (
     activities: Activity[]
   ): DayActivity[] => {
-    const days: DayActivity[] = [];
-    const today = new Date();
+    const days: DayActivity[] = []
+    const today = new Date()
 
     // Create array for last 28 days
     for (let i = 27; i >= 0; i--) {
-      const date = startOfDay(subDays(today, i));
+      const date = startOfDay(subDays(today, i))
       const dayActivities = activities.filter((activity) =>
         isWithinInterval(new Date(activity.timestamp), {
           start: date,
           end: addDays(date, 1),
         })
-      );
+      )
 
       // Determine activity level based on number of activities
-      let level: ActivityLevel = "none";
+      let level: ActivityLevel = "none"
       if (dayActivities.length > 0) {
-        if (dayActivities.length <= 2) level = "low";
-        else if (dayActivities.length <= 4) level = "medium";
-        else level = "high";
+        if (dayActivities.length <= 2) level = "low"
+        else if (dayActivities.length <= 4) level = "medium"
+        else level = "high"
       }
 
       days.push({
@@ -333,48 +338,47 @@ export default function Dashboard() {
           completed: activity.completed,
           time: format(new Date(activity.timestamp), "h:mm a"),
         })),
-      });
+      })
     }
 
-    return days;
-  };
+    return days
+  }
 
   // Modify the loadActivities function to use a default user ID
   const loadActivities = useCallback(async () => {
     try {
-      const userActivities = await getUserActivities("default-user");
-      setActivities(userActivities);
-      setActivityHistory(transformActivitiesToDayActivity(userActivities));
+      const userActivities = await getUserActivities("default-user")
+      setActivities(userActivities)
+      setActivityHistory(transformActivitiesToDayActivity(userActivities))
     } catch (error) {
-      console.error("Error loading activities:", error);
+      console.error("Error loading activities:", error)
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
-    setMounted(true);
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
+    setMounted(true)
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000)
+    return () => clearInterval(timer)
+  }, [])
 
   // Add this effect to update stats when activities change
   useEffect(() => {
     if (activities.length > 0) {
-      setDailyStats(calculateDailyStats(activities));
+      setDailyStats(calculateDailyStats(activities))
     }
-  }, [activities]);
+  }, [activities])
 
   // Update the effect
   useEffect(() => {
     if (activities.length > 0) {
-      setInsights(generateInsights(activities));
+      setInsights(generateInsights(activities))
     }
-  }, [activities]);
-
+  }, [activities])
 
   const fetchDailyStats = useCallback(async () => {
     try {
       const sessions = await getAllChatSessions()
-  
+
       const today = startOfDay(new Date())
       const todaysActivities = activities.filter((activity) =>
         isWithinInterval(new Date(activity.timestamp), {
@@ -382,23 +386,32 @@ export default function Dashboard() {
           end: addDays(today, 1),
         })
       )
-  
+
       const moodEntries = todaysActivities.filter(
         (a: Activity) => a.type === "mood" && a.moodScore !== null
       )
-  
-      const averageMood =
+
+      // const averageMood =
+      //   moodEntries.length > 0
+      //     ? Math.round(
+      //         moodEntries.reduce(
+      //           (acc: number, curr: Activity) => acc + (curr.moodScore || 0),
+      //           0
+      //         ) / moodEntries.length
+      //       )
+      //     : null
+
+      const latestMood =
         moodEntries.length > 0
-          ? Math.round(
-              moodEntries.reduce(
-                (acc: number, curr: Activity) => acc + (curr.moodScore || 0),
-                0
-              ) / moodEntries.length
-            )
+          ? moodEntries.sort(
+              (a, b) =>
+                new Date(b.timestamp).getTime() -
+                new Date(a.timestamp).getTime()
+            )[0].moodScore
           : null
-  
+
       setDailyStats({
-        moodScore: averageMood,
+        moodScore: latestMood ?? null,
         completionRate: 100,
         mindfulnessCount: sessions.length,
         totalActivities: todaysActivities.length,
@@ -455,37 +468,42 @@ export default function Dashboard() {
       bgColor: "bg-blue-500/10",
       description: "Planned for today",
     },
-  ];
+  ]
 
   // Load activities on mount
   useEffect(() => {
-    loadActivities();
-  }, [loadActivities]);
+    loadActivities()
+  }, [loadActivities])
 
   // Add these action handlers
   const handleStartTherapy = () => {
-    router.push("/therapy/new");
-  };
+    router.push("/therapy/new")
+  }
 
-  const handleMoodSubmit = async (data: { moodScore: number }) => {
-    setIsSavingMood(true);
+  const handleMoodSubmit = async (moodScore: number) => {
+    setIsSavingMood(true)
     try {
       await saveMoodData({
         userId: "default-user",
-        mood: data.moodScore,
+        mood: moodScore,
         note: "",
-      });
-      setShowMoodModal(false);
+      })
+      setShowMoodModal(false)
+      await loadActivities()
     } catch (error) {
-      console.error("Error saving mood:", error);
+      console.error("Error saving mood:", error)
+      toast.error("Error Saving Mood!", {
+        description:
+          error instanceof Error ? error.message : "Error saving mood",
+      })
     } finally {
-      setIsSavingMood(false);
+      setIsSavingMood(false)
     }
-  };
+  }
 
   const handleAICheckIn = () => {
-    setShowActivityLogger(true);
-  };
+    setShowActivityLogger(true)
+  }
 
   // Add handler for game activities
   const handleGamePlayed = useCallback(
@@ -497,31 +515,31 @@ export default function Dashboard() {
           name: gameName,
           description: description,
           duration: 0,
-        });
+        })
 
         // Refresh activities after logging
-        loadActivities();
+        loadActivities()
       } catch (error) {
-        console.error("Error logging game activity:", error);
+        console.error("Error logging game activity:", error)
       }
     },
     [loadActivities]
-  );
+  )
 
   // Simple loading state
   if (!mounted) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
       </div>
-    );
+    )
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <Container className="pt-20 pb-8 space-y-6">
+      <Container className="space-y-6 pt-20 pb-8">
         {/* Header Section */}
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -538,28 +556,28 @@ export default function Dashboard() {
               })}
             </p>
           </motion.div>
-          <div className="flex items-center gap-4">
+          {/* <div className="flex items-center gap-4">
             <Button variant="outline" size="icon">
               <Bell className="h-5 w-5" />
             </Button>
-          </div>
+          </div> */}
         </div>
 
         {/* Main Grid Layout */}
         <div className="space-y-6">
           {/* Top Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {/* Quick Actions Card */}
-            <Card className="border-primary/10 relative overflow-hidden group">
+            <Card className="group relative overflow-hidden border-primary/10">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/10 to-transparent" />
-              <CardContent className="p-6 relative">
+              <CardContent className="relative p-6">
                 <div className="space-y-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Zap className="w-5 h-5 text-primary" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                      <Zap className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-lg">Quick Actions</h3>
+                      <h3 className="text-lg font-semibold">Quick Actions</h3>
                       <p className="text-sm text-muted-foreground">
                         Start your wellness journey
                       </p>
@@ -570,15 +588,15 @@ export default function Dashboard() {
                     <Button
                       variant="default"
                       className={cn(
-                        "w-full justify-between items-center p-6 h-auto group/button",
+                        "group/button h-auto w-full items-center justify-between p-6",
                         "bg-gradient-to-r from-primary/90 to-primary hover:from-primary hover:to-primary/90",
                         "transition-all duration-200 group-hover:translate-y-[-2px]"
                       )}
                       onClick={handleStartTherapy}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                          <MessageSquare className="w-4 h-4 text-white" />
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10">
+                          <MessageSquareMore className="h-4 w-4 text-white" />
                         </div>
                         <div className="text-left">
                           <div className="font-semibold text-white">
@@ -589,8 +607,8 @@ export default function Dashboard() {
                           </div>
                         </div>
                       </div>
-                      <div className="opacity-0 group-hover/button:opacity-100 transition-opacity">
-                        <ArrowRight className="w-5 h-5 text-white" />
+                      <div className="cursor-pointer opacity-0 transition-opacity group-hover/button:opacity-100">
+                        <CircleArrowRight className="h-5 w-5 text-white" />
                       </div>
                     </Button>
 
@@ -598,18 +616,18 @@ export default function Dashboard() {
                       <Button
                         variant="outline"
                         className={cn(
-                          "flex flex-col h-[120px] px-4 py-3 group/mood hover:border-primary/50",
-                          "justify-center items-center text-center",
-                          "transition-all duration-200 group-hover:translate-y-[-2px]"
+                          "group/mood flex h-[120px] flex-col px-4 py-3 hover:border-primary/50",
+                          "items-center justify-center text-center",
+                          "cursor-pointer transition-all duration-200 group-hover:translate-y-[-2px]"
                         )}
                         onClick={() => setShowMoodModal(true)}
                       >
-                        <div className="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center mb-2">
-                          <Heart className="w-5 h-5 text-rose-500" />
+                        <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-rose-500/10">
+                          <Heart className="h-5 w-5 text-rose-500" />
                         </div>
                         <div>
-                          <div className="font-medium text-sm">Track Mood</div>
-                          <div className="text-xs text-muted-foreground mt-0.5">
+                          <div className="text-sm font-medium">Track Mood</div>
+                          <div className="mt-0.5 text-xs text-muted-foreground">
                             How are you feeling?
                           </div>
                         </div>
@@ -618,18 +636,18 @@ export default function Dashboard() {
                       <Button
                         variant="outline"
                         className={cn(
-                          "flex flex-col h-[120px] px-4 py-3 group/ai hover:border-primary/50",
-                          "justify-center items-center text-center",
-                          "transition-all duration-200 group-hover:translate-y-[-2px]"
+                          "group/ai flex h-[120px] flex-col px-4 py-3 hover:border-primary/50",
+                          "items-center justify-center text-center",
+                          "cursor-pointer transition-all duration-200 group-hover:translate-y-[-2px]"
                         )}
                         onClick={handleAICheckIn}
                       >
-                        <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center mb-2">
-                          <BrainCircuit className="w-5 h-5 text-blue-500" />
+                        <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/10">
+                          <BrainCircuit className="h-5 w-5 text-blue-500" />
                         </div>
                         <div>
-                          <div className="font-medium text-sm">Check-in</div>
-                          <div className="text-xs text-muted-foreground mt-0.5">
+                          <div className="text-sm font-medium">Check-in</div>
+                          <div className="mt-0.5 text-xs text-muted-foreground">
                             Quick wellness check
                           </div>
                         </div>
@@ -657,7 +675,8 @@ export default function Dashboard() {
                     onClick={fetchDailyStats}
                     className="h-8 w-8"
                   >
-                    <Loader2 className={cn("h-4 w-4", "animate-spin")} />
+                    <RotateCw className="h-4 w-4 cursor-pointer" />
+                    {/* <span className="sr-only">Refresh</span> */}
                   </Button>
                 </div>
               </CardHeader>
@@ -667,22 +686,22 @@ export default function Dashboard() {
                     <div
                       key={stat.title}
                       className={cn(
-                        "p-4 rounded-lg transition-all duration-200 hover:scale-[1.02]",
+                        "rounded-lg p-4 transition-all duration-200 hover:scale-[1.02]",
                         stat.bgColor
                       )}
                     >
                       <div className="flex items-center gap-2">
-                        <stat.icon className={cn("w-5 h-5", stat.color)} />
+                        <stat.icon className={cn("h-5 w-5", stat.color)} />
                         <p className="text-sm font-medium">{stat.title}</p>
                       </div>
-                      <p className="text-2xl font-bold mt-2">{stat.value}</p>
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <p className="mt-2 text-2xl font-bold">{stat.value}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">
                         {stat.description}
                       </p>
                     </div>
                   ))}
                 </div>
-                <div className="mt-4 text-xs text-muted-foreground text-right">
+                <div className="mt-4 text-right text-xs text-muted-foreground">
                   Last updated: {format(dailyStats.lastUpdated, "h:mm a")}
                 </div>
               </CardContent>
@@ -692,7 +711,7 @@ export default function Dashboard() {
             <Card className="border-primary/10">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Logs className="w-5 h-5 text-primary" />
+                  <Logs className="h-5 w-5 text-primary" />
                   Insights
                 </CardTitle>
                 <CardDescription>
@@ -706,16 +725,16 @@ export default function Dashboard() {
                       <div
                         key={index}
                         className={cn(
-                          "p-4 rounded-lg space-y-2 transition-all hover:scale-[1.02]",
+                          "space-y-2 rounded-lg p-4 transition-all hover:scale-[1.02]",
                           insight.priority === "high"
                             ? "bg-primary/10"
                             : insight.priority === "medium"
-                            ? "bg-primary/5"
-                            : "bg-muted"
+                              ? "bg-primary/5"
+                              : "bg-muted"
                         )}
                       >
                         <div className="flex items-center gap-2">
-                          <insight.icon className="w-5 h-5 text-primary" />
+                          <insight.icon className="h-5 w-5 text-primary" />
                           <p className="font-medium">{insight.title}</p>
                         </div>
                         <p className="text-sm text-muted-foreground">
@@ -724,8 +743,8 @@ export default function Dashboard() {
                       </div>
                     ))
                   ) : (
-                    <div className="text-center text-muted-foreground py-8">
-                      <Activity className="w-8 h-8 mx-auto mb-3 opacity-50" />
+                    <div className="py-8 text-center text-muted-foreground">
+                      <Activity className="mx-auto mb-3 h-8 w-8 opacity-50" />
                       <p>
                         Complete more activities to receive personalized
                         insights
@@ -738,9 +757,9 @@ export default function Dashboard() {
           </div>
 
           {/* Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Left side - Spans 2 columns */}
-            <div className="lg:col-span-3 space-y-6">
+            <div className="space-y-6 lg:col-span-3">
               {/* Anxiety Games - Now directly below Fitbit */}
               <AnxietyGames onGamePlayed={handleGamePlayed} />
             </div>
@@ -757,23 +776,23 @@ export default function Dashboard() {
               Move the slider to track your current mood
             </DialogDescription>
           </DialogHeader>
-          <MoodForm onSuccess={() => setShowMoodModal(false)} />
+          <MoodForm onSuccess={handleMoodSubmit} />
         </DialogContent>
       </Dialog>
 
       {/* AI check-in chat */}
       {showCheckInChat && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50">
-          <div className="fixed inset-y-0 right-0 w-full max-w-sm bg-background border-l shadow-lg">
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
+          <div className="fixed inset-y-0 right-0 w-full max-w-sm border-l bg-background shadow-lg">
             <div className="flex h-full flex-col">
-              <div className="flex items-center justify-between px-4 py-3 border-b">
+              <div className="flex items-center justify-between border-b px-4 py-3">
                 <h3 className="font-semibold">AI Check-in</h3>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowCheckInChat(false)}
                 >
-                  <X className="w-4 h-4" />
+                  <X className="h-4 w-4" />
                 </Button>
               </div>
               <div className="flex-1 overflow-y-auto p-4"></div>
@@ -788,5 +807,5 @@ export default function Dashboard() {
         onActivityLogged={loadActivities}
       />
     </div>
-  );
+  )
 }

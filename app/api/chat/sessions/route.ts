@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { toast } from "sonner"
 
 const BACKEND_API_URL = process.env.BACKEND_API_URL || "http://localhost:3001"
 
@@ -31,10 +32,12 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await response.json()
-    console.log("Chat Session Created:", data)
     return NextResponse.json(data)
   } catch (error) {
     console.error("Error Creating Chat Session:", error)
+    toast.error("Failed to Create Chat Session!", {
+      description: error instanceof Error ? error.message : "Failed to Create Chat Session!",
+    })
     return NextResponse.json(
       { error: "Failed to Create Chat Session!" },
       { status: 500 }

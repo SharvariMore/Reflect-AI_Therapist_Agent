@@ -8,7 +8,6 @@ export async function GET(
 ) {
   try {
     const { sessionId } = params
-    console.log(`Getting Chat History for Session ${sessionId}`)
 
     const response = await fetch(
       `${BACKEND_API_URL}/chat/sessions/${sessionId}/history`,
@@ -30,8 +29,7 @@ export async function GET(
     }
 
     const data = await response.json()
-    console.log("Chat History Retrieved Successfully:", data)
-
+  
     // Format the response to match the frontend's expected format
     const formattedMessages = data.map((msg: any) => ({
       role: msg.role,
