@@ -121,7 +121,7 @@ const calculateDailyStats = (activities: Activity[]): DailyStats => {
 
   // Calculate mood score (average of today's mood entries)
   const moodEntries = todaysActivities.filter(
-    (a) => a.type === "mood" && a.moodScore !== null
+    (a) => a.type === "mood" && a.moodScore !== null && a.moodScore !== undefined
   )
   const latestMood =
     moodEntries.length > 0
@@ -438,7 +438,10 @@ export default function Dashboard() {
   const wellnessStats = [
     {
       title: "Mood Score",
-      value: dailyStats.moodScore ? `${dailyStats.moodScore}%` : "No data",
+      value:
+        dailyStats?.moodScore !== null && dailyStats?.moodScore !== undefined
+          ? `${dailyStats.moodScore}%`
+          : "No data",
       icon: HeartPulse,
       color: "text-purple-500",
       bgColor: "bg-purple-500/10",
