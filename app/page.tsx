@@ -16,9 +16,25 @@ import {
   ShieldPlus,
   CircleArrowRight,
   Stethoscope,
+  Shield,
+  HeartHandshake,
+  Sparkles,
+  ChevronsRight,
+  Heart,
+  AudioLines,
+  ShieldUser,
 } from "lucide-react"
 import { Slider } from "@/components/ui/slider"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"
+import Link from "next/link"
+import React from "react"
 
 export default function Page() {
   /* value represents the intensity of the emotion */
@@ -34,21 +50,24 @@ export default function Page() {
     {
       icon: HandHeart,
       title: "24/7 Support",
-      description: "Always-on AI that listens, adapts, and supports you in real time.",
+      description:
+        "Always-on AI that listens, adapts, and supports you in real time.",
       color: "from-rose-500/20",
       delay: 0.2,
     },
     {
       icon: Lightbulb,
       title: "Smart Insights",
-      description: "AI-driven insights that evolve with your emotional patterns.",
+      description:
+        "AI-driven insights that evolve with your emotional patterns.",
       color: "from-amber-500/20",
       delay: 0.4,
     },
     {
       icon: ShieldPlus,
       title: "Private & Secure",
-      description: "Encrypted end-to-end, with confidentiality built in design.",
+      description:
+        "Encrypted end-to-end, with confidentiality built in design.",
       color: "from-emerald-500/20",
       delay: 0.6,
     },
@@ -58,6 +77,27 @@ export default function Page() {
       description: "Clinically grounded techniques enhanced by intelligent AI.",
       color: "from-blue-500/20",
       delay: 0.8,
+    },
+  ]
+
+  const welcomeSteps = [
+    {
+      title: "Hi, I'm Reflect 👋",
+      description:
+        "Your AI companion for emotional well-being. Here to listen without judgment and hold space for whatever you’re feeling.",
+      icon: AudioLines,
+    },
+    {
+      title: "Personalized Support 💟",
+      description:
+        "I tune into your emotions and adapt in real time, offering thoughtful insights and gentle guidance tailored just for you.",
+      icon: HeartHandshake,
+    },
+    {
+      title: "Your Privacy Matters 🛡️",
+      description:
+        "Everything you share stays between us. Protected, encrypted, and handled with the highest respect for your boundaries.",
+      icon: ShieldUser,
     },
   ]
 
@@ -101,29 +141,31 @@ export default function Page() {
           transition={{ delay: 0.3, duration: 0.8 }}
         >
           {/* Enhanced badge with subtle animation */}
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm backdrop-blur-sm transition-all duration-300 hover:border-primary/40">
-            <Stethoscope className="animate-wave h-4 w-4 text-primary" />
-            <span className="relative text-foreground/90 after:absolute after:bottom-0 after:left-0 after:h-[1px] after:w-full after:scale-x-0 after:bg-primary/30 after:transition-transform after:duration-300 after:content-[''] hover:after:scale-x-100 dark:text-foreground">
-              Your AI Agent Mental Health Companion
-            </span>
+          <div className="relative space-y-8 text-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm backdrop-blur-sm transition-all duration-300 hover:border-primary/40">
+              <Stethoscope className="animate-wave h-4 w-4 text-primary" />
+              <span className="relative text-foreground/90 after:absolute after:bottom-0 after:left-0 after:h-[1px] after:w-full after:scale-x-0 after:bg-primary/30 after:transition-transform after:duration-300 after:content-[''] hover:after:scale-x-100 dark:text-foreground">
+                Your AI Agent Mental Health Companion
+              </span>
+            </div>
+
+            {/* Enhanced main heading with smoother gradient */}
+            <h1 className="font-plus-jakarta text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl">
+              <span className="inline-block bg-gradient-to-r from-primary via-primary/90 to-secondary bg-clip-text text-transparent transition-all duration-300 [text-shadow:_0_1px_0_rgb(0_0_0_/_20%)] hover:to-primary">
+                Find Peace
+              </span>
+              <br />
+              <span className="mt-2 inline-block bg-gradient-to-b from-foreground to-foreground/90 bg-clip-text text-transparent">
+                of Mind
+              </span>
+            </h1>
+
+            {/* Enhanced description with better readability */}
+            <p className="mx-auto max-w-[600px] text-base leading-relaxed tracking-wide text-muted-foreground md:text-lg">
+              Step into a new era of emotional well-being. Powered by AI that
+              listens deeply, adapts to you, and guides you forward.
+            </p>
           </div>
-
-          {/* Enhanced main heading with smoother gradient */}
-          <h1 className="font-plus-jakarta text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl">
-            <span className="inline-block bg-gradient-to-r from-primary via-primary/90 to-secondary bg-clip-text text-transparent transition-all duration-300 [text-shadow:_0_1px_0_rgb(0_0_0_/_20%)] hover:to-primary">
-              Find Peace
-            </span>
-            <br />
-            <span className="mt-2 inline-block bg-gradient-to-b from-foreground to-foreground/90 bg-clip-text text-transparent">
-              of Mind
-            </span>
-          </h1>
-
-          {/* Enhanced description with better readability */}
-          <p className="mx-auto max-w-[600px] text-base leading-relaxed tracking-wide text-muted-foreground md:text-lg">
-            Step into a new era of emotional well-being. Powered by AI that
-            listens deeply, adapts to you, and guides you forward.
-          </p>
 
           {/* Emotion slider section with enhanced transitions */}
           <motion.div
@@ -250,6 +292,76 @@ export default function Page() {
           </div>
         </div>
       </section>
+
+      {/* Welcome dialog */}
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent className="bg-card/80 backdrop-blur-lg sm:max-w-[425px]">
+          <DialogHeader>
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4"
+            >
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                {welcomeSteps[currentStep] && (
+                  <div>
+                    {React.createElement(welcomeSteps[currentStep].icon, {
+                      className: "w-8 h-8 text-primary",
+                    })}
+                  </div>
+                )}
+              </div>
+              <DialogTitle className="text-center text-2xl">
+                {welcomeSteps[currentStep]?.title}
+              </DialogTitle>
+              <DialogDescription className="text-center text-base leading-relaxed">
+                {welcomeSteps[currentStep]?.description}
+              </DialogDescription>
+            </motion.div>
+          </DialogHeader>
+          <div className="mt-8 flex items-center justify-between">
+            <div className="flex gap-2">
+              {welcomeSteps.map((_, index) => (
+                <div
+                  key={index}
+                  className={`h-2 w-2 rounded-full transition-all duration-300 ${
+                    index === currentStep ? "w-4 bg-primary" : "bg-primary/20"
+                  }`}
+                />
+              ))}
+            </div>
+            <Button
+              onClick={() => {
+                if (currentStep < welcomeSteps.length - 1) {
+                  setCurrentStep((c) => c + 1)
+                } else {
+                  setShowDialog(false)
+                  setCurrentStep(0)
+                  // Here you would navigate to the chat interface
+                }
+              }}
+              className="group relative cursor-pointer px-6"
+            >
+              <span className="flex items-center gap-2">
+                {currentStep === welcomeSteps.length - 1 ? (
+                  <>
+                    Let's Begin
+                    <Heart className="h-4 w-4 animate-pulse" />
+                  </>
+                ) : (
+                  <>
+                    Next
+                    <ChevronsRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                  </>
+                )}
+              </span>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
