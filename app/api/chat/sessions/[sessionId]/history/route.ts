@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { toast } from "sonner"
 
 const BACKEND_API_URL = process.env.BACKEND_API_URL || "http://localhost:3001"
 
@@ -22,6 +23,7 @@ export async function GET(
     if (!response.ok) {
       const error = await response.json()
       console.error("Failed to Get Chat History:", error)
+      toast.error("Failed to Get Chat History! Please Try Again.")
       return NextResponse.json(
         { error: error.error || "Failed to Get Chat History!" },
         { status: response.status }
@@ -40,6 +42,7 @@ export async function GET(
     return NextResponse.json(formattedMessages)
   } catch (error) {
     console.error("Error Getting Chat History:", error)
+    toast.error("Failed to Get Chat History! Please Try Again.")
     return NextResponse.json(
       { error: "Failed to Get Chat History!" },
       { status: 500 }

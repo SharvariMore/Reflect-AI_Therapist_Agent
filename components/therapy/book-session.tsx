@@ -16,8 +16,9 @@ export function BookSession() {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       toast.success("Session Booked!", {
-        description: "Your therapy session has been confirmed.",
+        // description: "Your therapy session has been confirmed.",
         duration: 3000,
+        position: "top-center",
       });
 
       // Redirect to the therapy session

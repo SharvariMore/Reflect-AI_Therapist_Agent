@@ -143,6 +143,7 @@ export default function TherapyPage() {
       setIsLoading(false)
     } catch (error) {
       console.error("Failed to Create New Session:", error)
+      toast.error("Failed to Create New Session! Please Try Again.")
       setIsLoading(false)
     }
   }
@@ -167,10 +168,12 @@ export default function TherapyPage() {
               setMessages(formattedHistory)
             } else {
               console.error("Invalid Chat History Format:", history)
+              toast.error("Invalid Chat History Format! Please Try Again.")
               setMessages([])
             }
           } catch (historyError) {
             console.error("Error Loading Chat History:", historyError)
+            toast.error("Error Loading Chat History! Please Try Again.")
             setMessages([])
           }
         }
@@ -198,6 +201,7 @@ export default function TherapyPage() {
         setSessions(allSessions)
       } catch (error) {
         console.error("Failed to Load Sessions:", error)
+        toast.error("Failed to Load Sessions! Please Try Again.")
       }
     }
 
@@ -294,7 +298,7 @@ export default function TherapyPage() {
       scrollToBottom()
     } catch (error) {
       console.error("Error in chat:", error)
-      toast.error("Error in chat!", {
+      toast.error("Error in chat! Please Try Again.", {
         description: error instanceof Error ? error.message : "Error in chat!",
       })
       setMessages((prev) => [
@@ -397,6 +401,7 @@ export default function TherapyPage() {
       setShowNFTCelebration(true)
     } catch (error) {
       console.error("Error completing session:", error)
+      toast.error("Error Completing Session! Please Try Again.")
     } finally {
       setIsCompletingSession(false)
     }
@@ -422,6 +427,7 @@ export default function TherapyPage() {
       }
     } catch (error) {
       console.error("Failed to Load Session:", error)
+      toast.error("Failed to Load Session! Please Try Again.")
     } finally {
       setIsLoading(false)
     }

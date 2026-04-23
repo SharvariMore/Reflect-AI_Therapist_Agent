@@ -50,6 +50,8 @@ export default function LoginPage() {
     }
     toast.success("Login Successful!", {
       description: "You are now logged in.",
+      duration: 3000,
+      position: "top-center",
     })
   }
 

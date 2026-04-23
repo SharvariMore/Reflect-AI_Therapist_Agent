@@ -54,20 +54,22 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         const userData = data.user;
         const { password, ...safeUserData } = userData;
         setUser(safeUserData);
-        toast.success("Session Checked Successfully!", {
-          description: "Your session has been checked successfully.",
-        })
+        // toast.success("Session Checked Successfully!", {
+        //   // description: "Your session has been checked successfully.",
+        //   duration: 3000,
+        //   position: "top-center",
+        // })
       } else {
-        toast.error("Failed to Get User Data!", {
-          description: "Failed to get user data!",
+        toast.error("Failed to Get User Data! Please Try Again.", {
+          // description: "Failed to get user data!",
         })
         setUser(null);
         localStorage.removeItem("token");
       }
     } catch (error) {
       console.error("SessionContext: Error checking session:", error);
-      toast.error("Error Checking Session!", {
-        description: "Error checking session!",
+      toast.error("Error Checking Session! Please Try Again.", {
+        // description: "Error checking session!",
       })
       setUser(null);
       localStorage.removeItem("token");
@@ -89,6 +91,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       console.error("Logout Error:", error);
+      toast.error("Logout Failed! Please Try Again.", {
+        // description: "Logout failed!",
+      })
     } finally {
       localStorage.removeItem("token");
       setUser(null);

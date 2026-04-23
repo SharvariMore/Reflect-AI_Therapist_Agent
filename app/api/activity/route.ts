@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { toast } from "sonner"
 
 export async function POST(req: NextRequest) {
   const API_URL = process.env.BACKEND_API_URL || "http://localhost:3001"
@@ -40,6 +41,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(data)
   } catch (error) {
     console.error("Error logging Activity:", error)
+    toast.error("Error Logging Activity! Please Try Again.")
     return NextResponse.json(
       { error: "Internal Server Error!" },
       { status: 500 }

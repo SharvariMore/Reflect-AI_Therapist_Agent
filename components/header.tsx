@@ -2,22 +2,33 @@
 
 import Link from "next/link"
 import { useState } from "react"
-import { AudioLines, LogOut, Menu, MessageCircle, MessageCircleHeart, MessageCircleMore, X } from "lucide-react"
+import {
+  AudioLines,
+  LogOut,
+  Menu,
+  MessageCircle,
+  MessageCircleHeart,
+  MessageCircleMore,
+  X,
+} from "lucide-react"
 import ThemeToggle from "./theme-toggle"
 import SignInButton from "./auth/sign-in-button"
 import { Button } from "./ui/button"
 import { useSession } from "@/lib/contexts/session-context"
+import { usePathname } from "next/navigation"
 
 export default function Header() {
   const navItems = [
+    { href: "/", label: "Home" },
     { href: "/features", label: "Features" },
     { href: "/about", label: "About Reflect" },
   ]
 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { isAuthenticated, logout, user } = useSession()
+  const pathname = usePathname()
 
-  console.log("Header: Auth state:", { isAuthenticated, user });
+  console.log("Header: Auth state:", { isAuthenticated, user })
 
   return (
     <header className="fixed top-0 right-0 left-0 z-50 border-b border-primary/10 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80">
@@ -44,7 +55,11 @@ export default function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="group relative px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  className={`group relative px-4 py-2 text-sm transition-colors ${
+                    pathname === item.href
+                      ? "font-semibold text-foreground"
+                      : "font-medium text-muted-foreground hover:text-foreground"
+                  } `}
                 >
                   {item.label}
                   <span className="absolute bottom-0 left-0 h-0.5 w-full origin-left scale-x-0 bg-primary transition-transform duration-200 group-hover:scale-x-100" />
@@ -69,7 +84,7 @@ export default function Header() {
                   <Button
                     variant="outline"
                     onClick={logout}
-                    className="text-muted-foreground transition-colors hover:text-foreground"
+                    className="cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
                   >
                     <LogOut className="mr-2 h-4 w-4" />
                     Sign out

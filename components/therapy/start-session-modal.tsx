@@ -40,7 +40,7 @@ export function StartSessionModal() {
     } catch (error) {
       console.error("Failed to start session:", error)
       setError("Failed to Start Session. Please Try Again.")
-      toast.error("Failed to Start Session. Please Try Again.")
+      toast.error("Failed to Start Session! Please Try Again.")
     }
   }
 

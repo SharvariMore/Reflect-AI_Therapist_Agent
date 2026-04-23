@@ -116,7 +116,9 @@ export const sendChatMessage = async (
 
     const data = await response.json()
     toast.success("Message Sent Successfully!", {
-      description: "Your message has been sent to the therapist.",
+      // description: "Your message has been sent to the therapist.",
+      duration: 3000,
+      position: "top-center",
     })
     return data
   } catch (error) {

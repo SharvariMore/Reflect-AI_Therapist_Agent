@@ -21,6 +21,7 @@ import  BreathingGame  from "./breathing-game";
 import  ZenGarden  from "./zen-garden";
 import  ForestGame from "./forest-game";
 import  OceanWaves  from "./ocean-waves";
+import { toast } from "sonner";
 
 
 const games = [
@@ -84,6 +85,7 @@ export const AnxietyGames = ({ onGamePlayed }: AnxietyGamesProps) => {
         );
       } catch (error) {
         console.error("Error logging game activity:", error);
+        toast.error("Failed to Log Game Activity! Please Try Again.")
       }
     }
   };

@@ -37,7 +37,7 @@ export default function MoodForm({ onSuccess }: MoodFormProps) {
     if (!isAuthenticated) {
       toast.warning("Authentication Required!", {
         description: "Please Login to Track Your Mood.",
-        duration: 5000,
+        duration: 3000,
       })
       router.push("/login")
       return
@@ -63,9 +63,9 @@ export default function MoodForm({ onSuccess }: MoodFormProps) {
       if (!response.ok) {
         const error = await response.json()
         console.error("MoodForm: Error response:", error)
-        toast.error("Failed to Track Your Mood!", {
+        toast.error("Failed to Track Your Mood! Please Try Again.", {
           description: error.error || "Failed to Track Your Mood!",
-          duration: 5000,
+          duration: 3000,
         })
         throw new Error(error.error || "Failed to Track Your Mood!")
       }
@@ -74,17 +74,18 @@ export default function MoodForm({ onSuccess }: MoodFormProps) {
 
       toast.success("Mood Tracked Successfully!", {
         // description: "Your Mood has Been Recorded!",
-        duration: 5000,
+        duration: 3000,
+        position: "top-center",
       })
 
       // Call onSuccess to close the modal
       onSuccess?.(moodScore)
     } catch (error) {
       console.error("MoodForm: Error:", error)
-      toast.error("Error", {
+      toast.error("Error Tracking Your Mood! Please Try Again.", {
         description:
           error instanceof Error ? error.message : "Failed to Track Your Mood!",
-        duration: 5000,
+        duration: 3000,
       })
     } finally {
       setIsLoading(false)

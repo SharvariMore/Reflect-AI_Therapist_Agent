@@ -27,6 +27,8 @@ import {
   RefreshCcw,
   CircleArrowRight,
   MessageSquareMore,
+  Medal,
+  Award,
 } from "lucide-react"
 import {
   Card,
@@ -109,6 +111,27 @@ interface DailyStats {
   lastUpdated: Date
 }
 
+const getAdaptiveDailyGoal = (activities: Activity[]) => {
+  const last7Days: number[] = Array.from({ length: 7 }, (_, i) => {
+    const dayStart = startOfDay(subDays(new Date(), i))
+    const dayEnd = addDays(dayStart, 1)
+
+    return activities.filter(
+      (activity) =>
+        activity.type !== "mood" &&
+        isWithinInterval(new Date(activity.timestamp), {
+          start: dayStart,
+          end: dayEnd,
+        })
+    ).length
+  })
+
+  const averagePerDay =
+    last7Days.reduce((sum, count) => sum + count, 0) / last7Days.length
+
+  return Math.min(Math.max(Math.round(averagePerDay), 5), 10)
+}
+
 // Update the calculateDailyStats function to show correct stats
 const calculateDailyStats = (activities: Activity[]): DailyStats => {
   const today = startOfDay(new Date())
@@ -119,9 +142,10 @@ const calculateDailyStats = (activities: Activity[]): DailyStats => {
     })
   )
 
-  // Calculate mood score (average of today's mood entries) 
+  // Calculate mood score (average of today's mood entries)
   const moodEntries = todaysActivities.filter(
-    (a) => a.type === "mood" && a.moodScore !== null && a.moodScore !== undefined // check if mood score is very low
+    (a) =>
+      a.type === "mood" && a.moodScore !== null && a.moodScore !== undefined // check if mood score is very low
   )
   const latestMood =
     moodEntries.length > 0
@@ -134,9 +158,15 @@ const calculateDailyStats = (activities: Activity[]): DailyStats => {
   // Count therapy sessions (all sessions ever)
   const therapySessions = activities.filter((a) => a.type === "therapy").length
 
+  const DAILY_GOAL = getAdaptiveDailyGoal(activities)
+  const completionRate =
+    todaysActivities.length > 0
+      ? Math.min(Math.round((todaysActivities.length / DAILY_GOAL) * 100), 100)
+      : 0
+
   return {
     moodScore: latestMood ?? null,
-    completionRate: 100, // Always 100% as requested
+    completionRate,
     mindfulnessCount: therapySessions, // Total number of therapy sessions
     totalActivities: todaysActivities.length,
     lastUpdated: new Date(),
@@ -224,7 +254,7 @@ const generateInsights = (activities: Activity[]) => {
       description: `You've completed ${Math.round(
         completionRate
       )}% of your activities this week. Excellent commitment!`,
-      icon: Trophy,
+      icon: Award,
       priority: "high",
     })
   } else if (completionRate < 50) {
@@ -298,7 +328,7 @@ export default function Dashboard() {
   const [isSavingMood, setIsSavingMood] = useState(false)
   const [dailyStats, setDailyStats] = useState<DailyStats>({
     moodScore: null,
-    completionRate: 100,
+    completionRate: 0,
     mindfulnessCount: 0,
     totalActivities: 0,
     lastUpdated: new Date(),
@@ -352,6 +382,7 @@ export default function Dashboard() {
       setActivityHistory(transformActivitiesToDayActivity(userActivities))
     } catch (error) {
       console.error("Error loading activities:", error)
+      toast.error("Failed to Load Activities! Please Try Again.")
     }
   }, [])
 
@@ -410,15 +441,25 @@ export default function Dashboard() {
             )[0].moodScore
           : null
 
+      const DAILY_GOAL = getAdaptiveDailyGoal(activities)
+      const completionRate =
+        todaysActivities.length > 0
+          ? Math.min(
+              Math.round((todaysActivities.length / DAILY_GOAL) * 100),
+              100
+            )
+          : 0
+
       setDailyStats({
         moodScore: latestMood ?? null,
-        completionRate: 100,
+        completionRate,
         mindfulnessCount: sessions.length,
         totalActivities: todaysActivities.length,
         lastUpdated: new Date(),
       })
     } catch (error) {
       console.error("Error fetching daily stats:", error)
+      toast.error("Failed to Fetch Daily Stats! Please Try Again.")
     }
   }, [activities])
 
@@ -449,7 +490,7 @@ export default function Dashboard() {
     },
     {
       title: "Completion Rate",
-      value: "100%",
+      value: `${dailyStats.completionRate}%`,
       icon: Trophy,
       color: "text-yellow-500",
       bgColor: "bg-yellow-500/10",
@@ -524,6 +565,7 @@ export default function Dashboard() {
         loadActivities()
       } catch (error) {
         console.error("Error logging game activity:", error)
+        toast.error("Failed to Log Game Activity! Please Try Again.")
       }
     },
     [loadActivities]

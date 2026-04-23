@@ -54,15 +54,17 @@ export default function ActivityLogger({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!isAuthenticated) {
-      toast.warning("Authentication Required", {
-        description: "Please log in to log activities",
+      toast.warning("Authentication Required!", {
+        description: "Please Log In to Log Activities",
+        duration: 3000,
       })
       return
     }
 
     if (!type || !name) {
-      toast.warning("Missing Information", {
-        description: "Please fill in all required fields",
+      toast.warning("Missing Information!", {
+        description: "Please Fill in All Required Fields!",
+        duration: 3000,
       })
       return
     }
@@ -83,14 +85,16 @@ export default function ActivityLogger({
       setDescription("")
 
       toast.success("Activity Logged Successfully!", {
-        description: "Your Activity Has Been Recorded.",
+        // description: "Your Activity Has Been Recorded.",
+        duration: 3000,
+        position: "top-center",
       })
 
       onActivityLogged()
       onOpenChange(false)
     } catch (error) {
       console.error("Error logging activity:", error)
-      toast.error("Failed to log activity", {
+      toast.error("Failed to log activity! Please Try Again.", {
         description:
           error instanceof Error ? error.message : "Failed to Log Activity!",
       })
@@ -128,7 +132,7 @@ export default function ActivityLogger({
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Morning Meditation, Evening Walk, etc."
+              placeholder="Morning Yoga, Evening Walk, etc."
             />
           </div>
 
@@ -139,6 +143,8 @@ export default function ActivityLogger({
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
               placeholder="15"
+              min={0}
+              max={1200000000000000}
             />
           </div>
 

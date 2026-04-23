@@ -18,23 +18,24 @@ export default function LoginPage() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     // setLoading(true)
     setError("")
-    if(password !== confirmPassword) {
+    if (password !== confirmPassword) {
       setError("Passwords Don't Match!")
       return
     }
-   setLoading(true)
-   try {
-    await registerUser(name, email, password)
-    router.push("/login")
-   } catch (error: any) {
-    setError(error.message || "Something Went Wrong! Please Try Again.")
-   } finally {
-    setLoading(false)
-   }
+    setLoading(true)
+    try {
+      await registerUser(name, email, password)
+      router.push("/login")
+    } catch (error: any) {
+      setError(error.message || "Something Went Wrong! Please Try Again.")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -143,7 +144,7 @@ export default function LoginPage() {
               </p>
             )}
             <Button
-              className="w-full rounded-xl bg-gradient-to-r from-primary to-primary/80 py-2 text-base font-bold shadow-md hover:from-primary/80 hover:to-primary cursor-pointer"
+              className="w-full cursor-pointer rounded-xl bg-gradient-to-r from-primary to-primary/80 py-2 text-base font-bold shadow-md hover:from-primary/80 hover:to-primary"
               size="lg"
               type="submit"
               disabled={loading}
