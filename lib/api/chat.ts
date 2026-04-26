@@ -42,7 +42,7 @@ export interface ApiResponse {
   }
 }
 
-const API_BASE = process.env.BACKEND_BACKEND_API_URL || "http://localhost:3001/api"
+const API_BASE = process.env.BACKEND_API_URL || "http://localhost:3001/api"
 
 const parseErrorResponse = async (response: Response) => {
   const contentType = response.headers.get("content-type") || ""
