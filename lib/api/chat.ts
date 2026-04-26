@@ -66,7 +66,7 @@ const getAuthHeaders = () => {
 
 export const createChatSession = async (): Promise<string> => {
   try {
-    const response = await fetch(`${API_BASE}/chat/sessions`, {
+    const response = await fetch(`${API_BASE}/api/chat/sessions`, {
       method: "POST",
       headers: getAuthHeaders(),
     })
@@ -97,7 +97,7 @@ export const sendChatMessage = async (
 ): Promise<ApiResponse> => {
   try {
     const response = await fetch(
-      `${API_BASE}/chat/sessions/${sessionId}/messages`,
+      `${API_BASE}/api/chat/sessions/${sessionId}/messages`,
       {
         method: "POST",
         headers: getAuthHeaders(),
@@ -135,7 +135,7 @@ export const getChatHistory = async (
 ): Promise<ChatMessage[]> => {
   try {
     const response = await fetch(
-      `${API_BASE}/chat/sessions/${sessionId}/history`,
+      `${API_BASE}/api/chat/sessions/${sessionId}/history`,
       {
         headers: getAuthHeaders(),
       }
@@ -178,7 +178,7 @@ export const getChatHistory = async (
 
 export const getAllChatSessions = async (): Promise<ChatSession[]> => {
   try {
-    const response = await fetch(`${API_BASE}/chat/sessions`, {
+    const response = await fetch(`${API_BASE}/api/chat/sessions`, {
       headers: getAuthHeaders(),
     })
 
