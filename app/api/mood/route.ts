@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { toast } from "sonner"
 
 export async function POST(req: NextRequest) {
-  const API_URL = process.env.BACKEND_API_URL || "http://localhost:3001"
+  const BACKEND_API_URL = process.env.BACKEND_BACKEND_API_URL || "http://localhost:3001"
   const token = req.headers.get("Authorization")
 
   if (!token) {
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const response = await fetch(`${API_URL}/api/mood`, {
+    const response = await fetch(`${BACKEND_API_URL}/api/mood`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

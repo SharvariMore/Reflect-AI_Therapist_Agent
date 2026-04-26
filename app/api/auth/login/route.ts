@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
   const body = await request.json()
-  const API_URL = process.env.API_URL || "http://localhost:3001"
+  const BACKEND_API_URL = process.env.BACKEND_API_URL || "http://localhost:3001"
 
   try {
-    const resp = await fetch(`${API_URL}/api/auth/login`, {
+    const resp = await fetch(`${BACKEND_API_URL}/api/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

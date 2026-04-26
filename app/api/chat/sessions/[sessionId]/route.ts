@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { toast } from "sonner"
 
-const BACKEND_API_URL = process.env.BACKEND_API_URL || "http://localhost:3001"
+const BACKEND_BACKEND_API_URL = process.env.BACKEND_BACKEND_API_URL || "http://localhost:3001"
 
 export async function GET(
   req: NextRequest,
@@ -10,7 +10,7 @@ export async function GET(
   try {
     const { sessionId } = await params
     const response = await fetch(
-      `${BACKEND_API_URL}/chat/sessions/${sessionId}/history`
+      `${BACKEND_BACKEND_API_URL}/chat/sessions/${sessionId}/history`
     )
 
     if (!response.ok) {
@@ -45,7 +45,7 @@ export async function POST(
     }
 
     const response = await fetch(
-      `${BACKEND_API_URL}/chat/session/${sessionId}/messages`,
+      `${BACKEND_BACKEND_API_URL}/chat/session/${sessionId}/messages`,
       {
         method: "POST",
         headers: {

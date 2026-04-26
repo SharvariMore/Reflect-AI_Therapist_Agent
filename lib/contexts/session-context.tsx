@@ -19,7 +19,7 @@ interface SessionContextType {
   checkSession: () => Promise<void>;
 }
 
-const BACKEND_API_URL = process.env.BACKEND_API_URL || "http://localhost:3001"
+const BACKEND_BACKEND_API_URL = process.env.BACKEND_BACKEND_API_URL || "http://localhost:3001"
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
@@ -42,7 +42,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const response = await fetch(`${BACKEND_API_URL}/api/auth/me`, {
+      const response = await fetch(`${BACKEND_BACKEND_API_URL}/api/auth/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -82,7 +82,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     try {
       const token = localStorage.getItem("token");
       if (token) {
-        await fetch(`${BACKEND_API_URL}/api/auth/logout`, {
+        await fetch(`${BACKEND_BACKEND_API_URL}/api/auth/logout`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,

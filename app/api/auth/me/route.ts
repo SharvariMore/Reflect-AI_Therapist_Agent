@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(req: NextRequest) {
-  const API_URL = process.env.BACKEND_API_URL || "http://localhost:3001"
+  const BACKEND_API_URL = process.env.BACKEND_BACKEND_API_URL || "http://localhost:3001"
   const token = req.headers.get("Authorization")
 
   if (!token) {
@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const res = await fetch(`${API_URL}/api/auth/me`, {
+    const res = await fetch(`${BACKEND_API_URL}/api/auth/me`, {
       headers: {
         Authorization: token,
       },
